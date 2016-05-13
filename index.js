@@ -1,16 +1,19 @@
 'use strict'
 const electron = require('electron')
+const childProcess = require('child_process')
 const app = electron.app
+const Menu = electron.Menu
+const Tray = electron.Tray
 
 // adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')()
 
 // prevent window being garbage collected
 let mainWindow
+let serverProcess
+let appIcon
 
 function onClosed () {
-  // dereference the window
-  // for multiple windows store them in an array
   mainWindow = null
 }
 
@@ -24,6 +27,26 @@ function createMainWindow () {
   win.on('closed', onClosed)
 
   return win
+}
+
+function startRedisServer (port) {
+  serverProcess = childProcess.exec('redis-server')
+}
+
+function stopRedisServer () {
+  serverProcess.kill()
+}
+
+function setupMenuBar () {
+  appIcon = new Tray(`${__dirname}/assets/images/tray-icon.png`)
+  var contextMenu = Menu.buildFromTemplate([
+    { label: 'Item1', type: 'radio' },
+    { label: 'Item2', type: 'radio' },
+    { label: 'Item3', type: 'radio', checked: true },
+    { label: 'Item4', type: 'radio' }
+  ])
+  appIcon.setToolTip('This is my application.')
+  appIcon.setContextMenu(contextMenu)
 }
 
 app.on('window-all-closed', () => {
@@ -40,4 +63,6 @@ app.on('activate', () => {
 
 app.on('ready', () => {
   mainWindow = createMainWindow()
+  setupMenuBar()
+  startRedisServer()
 })
