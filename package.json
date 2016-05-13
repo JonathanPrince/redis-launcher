@@ -13,7 +13,7 @@
   "scripts": {
     "test": "xo",
     "start": "electron .",
-    "build": "electron-packager . --out=dist --app-version=$npm_package_version --prune --asar --overwrite --all"
+    "build": "electron-packager . --out=dist --overwrite --arch=x64 --platform=darwin --icon=assets/images/icon.icns"
   },
   "files": [
     "index.js",
