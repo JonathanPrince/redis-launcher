@@ -1,6 +1,6 @@
 'use strict'
 const electron = require('electron')
-const childProcess = require('child_process')
+const spawn = require('child_process').spawn
 const app = electron.app
 const Menu = electron.Menu
 const Tray = electron.Tray
@@ -30,11 +30,21 @@ function createMainWindow () {
 }
 
 function startRedisServer (port) {
-  serverProcess = childProcess.exec('redis-server')
+  console.log('starting redis server...')
+  if (!serverProcess) {
+    serverProcess = spawn('/usr/local/bin/redis-server', {detached: true})
+    serverProcess.stdout.on('data', (data) => {
+      console.log('data:', data.toString())
+    })
+  }
 }
 
 function stopRedisServer () {
-  serverProcess.kill()
+  console.log('stopping redis server')
+  if (serverProcess) {
+    serverProcess.kill('SIGKILL')
+    serverProcess = null
+  }
 }
 
 function setupMenuBar () {
