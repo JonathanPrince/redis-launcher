@@ -25,6 +25,7 @@ function createMainWindow () {
 
   win.loadURL(`file://${__dirname}/index.html`)
   win.on('closed', onClosed)
+  win.on('show', () => app.dock.show())
 
   return win
 }
@@ -60,6 +61,7 @@ function setupMenuBar () {
 }
 
 app.on('window-all-closed', () => {
+  app.dock.hide()
   if (process.platform !== 'darwin') {
     app.quit()
   }
