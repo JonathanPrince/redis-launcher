@@ -51,10 +51,20 @@ function stopRedisServer () {
 function setupMenuBar () {
   appIcon = new Tray(`${__dirname}/assets/images/tray-icon.png`)
   var contextMenu = Menu.buildFromTemplate([
-    { label: 'Item1', type: 'radio' },
-    { label: 'Item2', type: 'radio' },
-    { label: 'Item3', type: 'radio', checked: true },
-    { label: 'Item4', type: 'radio' }
+    { label: 'Open Window',
+      click: () => {
+        if (!mainWindow) {
+          mainWindow = createMainWindow()
+        } else {
+          mainWindow.show()
+        }
+      }
+    },
+    { type: 'separator' },
+    { label: 'Start Server', click: () => startRedisServer() },
+    { label: 'Stop Server', click: () => stopRedisServer() },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() }
   ])
   appIcon.setToolTip('This is my application.')
   appIcon.setContextMenu(contextMenu)
