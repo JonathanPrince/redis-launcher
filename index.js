@@ -88,3 +88,7 @@ app.on('ready', () => {
   setupMenuBar()
   startRedisServer()
 })
+
+app.on('quit', () => {
+  stopRedisServer()
+})
