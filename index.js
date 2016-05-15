@@ -59,7 +59,11 @@ function sendServerStatus (e) {
   exec('/usr/local/bin/redis-cli ping', (err, stdout, stderr) => {
     let isRunning = !err && stdout === 'PONG\n'
     console.log('server is running?', isRunning)
-    e.sender.send('server-status-update', isRunning)
+    if (e) {
+      e.sender.send('server-status-update', isRunning)
+    } else if (mainWindow) {
+      mainWindow.webContents.send('server-status-update', isRunning)
+    }
   })
 }
 
@@ -76,8 +80,20 @@ function setupMenuBar () {
       }
     },
     { type: 'separator' },
-    { label: 'Start Server', click: () => startRedisServer() },
-    { label: 'Stop Server', click: () => stopRedisServer() },
+    {
+      label: 'Start Server',
+      click: () => {
+        startRedisServer()
+        sendServerStatus()
+      }
+    },
+    {
+      label: 'Stop Server',
+      click: () => {
+        stopRedisServer()
+        sendServerStatus()
+      }
+    },
     { type: 'separator' },
     { label: 'Quit', click: () => app.quit() }
   ])
