@@ -3,6 +3,7 @@ const electron = require('electron')
 const child = require('child_process')
 const spawn = child.spawn
 const exec = child.exec
+const execSync = child.execSync
 const ipc = electron.ipcMain
 const app = electron.app
 const Menu = electron.Menu
@@ -10,8 +11,22 @@ const Tray = electron.Tray
 
 // prevent window being garbage collected
 let mainWindow
+let installWindow
 let serverProcess
 let appIcon
+let redisInstalled
+let redisServer
+let redisCli
+
+function loadMainWindow () {
+  if (!redisInstalled) {
+    checkRedisInstallation()
+  } else {
+    mainWindow = createMainWindow()
+    setupMenuBar()
+    startRedisServer()
+  }
+}
 
 function onClosed () {
   mainWindow = null
@@ -19,8 +34,8 @@ function onClosed () {
 
 function createMainWindow () {
   const win = new electron.BrowserWindow({
-    width: 600,
-    height: 400
+    width: 700,
+    height: 350
   })
 
   win.loadURL(`file://${__dirname}/index.html`)
@@ -30,11 +45,31 @@ function createMainWindow () {
   return win
 }
 
+function checkRedisInstallation () {
+  try {
+    redisServer = execSync('which redis-server').toString().trim()
+    redisCli = execSync('which redis-cli').toString().trim()
+    redisInstalled = true
+    loadMainWindow()
+  } catch (e) {
+    installRedis()
+  }
+}
+
+function installRedis () {
+  installWindow = new electron.BrowserWindow({
+    width: 700,
+    height: 350
+  })
+  installWindow.loadURL(`file://${__dirname}/install-redis.html`)
+  installWindow.on('close', loadMainWindow)
+}
+
 function startRedisServer (port) {
   if (!serverProcess) {
     console.log('starting redis server...')
 
-    serverProcess = spawn('/usr/local/bin/redis-server', ['--loglevel warning'], {detached: true})
+    serverProcess = spawn(redisServer, ['--loglevel warning'], {detached: true})
 
     serverProcess.on('error', err => {
       console.log('Server Error: ', err)
@@ -56,7 +91,7 @@ function stopRedisServer () {
 }
 
 function sendServerStatus (e) {
-  exec('/usr/local/bin/redis-cli ping', (err, stdout, stderr) => {
+  exec(`${redisCli} ping`, (err, stdout, stderr) => {
     let isRunning = !err && stdout === 'PONG\n'
     console.log('server is running?', isRunning)
     if (e) {
@@ -108,18 +143,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
-  if (!mainWindow) {
-    mainWindow = createMainWindow()
-  }
-})
-
-app.on('ready', () => {
-  mainWindow = createMainWindow()
-  setupMenuBar()
-  startRedisServer()
-})
-
+app.on('ready', loadMainWindow)
 app.on('quit', stopRedisServer)
 
 ipc.on('is-server-running', sendServerStatus)
