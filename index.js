@@ -19,9 +19,9 @@ let redisServer
 let redisCli
 
 function loadMainWindow () {
-  if (!redisInstalled) {
-    checkRedisInstallation()
-  } else {
+  checkRedisInstallation()
+  if (redisInstalled) {
+    if (installWindow) installWindow.close()
     mainWindow = createMainWindow()
     setupMenuBar()
     startRedisServer()
@@ -50,19 +50,20 @@ function checkRedisInstallation () {
     redisServer = execSync('which redis-server').toString().trim()
     redisCli = execSync('which redis-cli').toString().trim()
     redisInstalled = true
-    loadMainWindow()
   } catch (e) {
     installRedis()
   }
 }
 
 function installRedis () {
-  installWindow = new electron.BrowserWindow({
-    width: 700,
-    height: 350
-  })
-  installWindow.loadURL(`file://${__dirname}/install-redis.html`)
-  installWindow.on('close', loadMainWindow)
+  if (!installWindow) {
+    installWindow = new electron.BrowserWindow({
+      width: 700,
+      height: 350
+    })
+    installWindow.loadURL(`file://${__dirname}/install-redis.html`)
+    installWindow.on('closed', () => installWindow = null)
+  }
 }
 
 function startRedisServer (port) {
@@ -152,3 +153,4 @@ ipc.on('control-server', (e, action) => {
   if (action === 'stop') stopRedisServer()
   sendServerStatus(e)
 })
+ipc.on('retry', loadMainWindow)

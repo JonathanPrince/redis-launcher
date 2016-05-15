@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redis Launcher</title>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <div class="container">
+      <img src="assets/images/redis.svg" class="left margin-30">
+      <header>
+        <h1>Redis</h1>
+      </header>
+      <section class="main">
+        <h3>Please install Redis</h3>
+        <h4>Official Download</h4>
+        <p>Please visit <a href class="redis-link">http://redis.io/download</a> to download</p>
+        <h4>OR: Install with Homebrew</h4>
+        <p><span class="code">brew install redis</span></p>
+        <button class="retry-btn right">Retry</button>
+      </section>
+    </div>
+
+    <script type="text/javascript">
+      const electron = require('electron')
+      const shell = electron.shell
+      const ipc = electron.ipcRenderer
+      document.querySelector('.redis-link').addEventListener('click', () => {
+        shell.openExternal('http://redis.io/download')
+      })
+      document.querySelector('.retry-btn').addEventListener('click', () => {
+        ipc.send('retry')
+      })
+    </script>
+  </body>
+</html>
