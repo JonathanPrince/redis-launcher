@@ -12,9 +12,40 @@
         <h1>Redis</h1>
       </header>
       <section class="main">
-        <h3>Server running on port: 6379</h3>
+        <h3 class="status"></h3>
+        <button class="stop-button">Stop Server</button>
+        <button class="start-button">Start Server</button>
+        <div id="debug"></div>
       </section>
       <footer></footer>
     </div>
+
+    <script type="text/javascript">
+      const electron = require('electron')
+      const ipc = electron.ipcRenderer
+
+      const statusDisplay = document.querySelector('h3.status')
+      const stopBtn = document.querySelector('.stop-button')
+      const startBtn = document.querySelector('.start-button')
+
+      stopBtn.addEventListener('click', () => {
+        ipc.send('control-server', 'stop')
+      })
+      startBtn.addEventListener('click', () => {
+        ipc.send('control-server', 'start')
+      })
+
+      function setStatus (e, isRunning) {
+        console.log('is running: ', isRunning)
+        if (isRunning) {
+          statusDisplay.innerHTML = 'Server running on port: 6379'
+        } else {
+          statusDisplay.innerHTML = 'Server is not running.'
+        }
+      }
+
+      ipc.on('server-status-update', setStatus)
+      ipc.send('is-server-running')
+    </script>
   </body>
 </html>

@@ -1,12 +1,12 @@
 'use strict'
 const electron = require('electron')
-const spawn = require('child_process').spawn
+const child = require('child_process')
+const spawn = child.spawn
+const exec = child.exec
+const ipc = electron.ipcMain
 const app = electron.app
 const Menu = electron.Menu
 const Tray = electron.Tray
-
-// adds debug features like hotkeys for triggering dev tools and reload
-require('electron-debug')()
 
 // prevent window being garbage collected
 let mainWindow
@@ -31,11 +31,18 @@ function createMainWindow () {
 }
 
 function startRedisServer (port) {
-  console.log('starting redis server...')
   if (!serverProcess) {
-    serverProcess = spawn('/usr/local/bin/redis-server', {detached: true})
+    console.log('starting redis server...')
+
+    serverProcess = spawn('/usr/local/bin/redis-server', ['--loglevel warning'], {detached: true})
+
+    serverProcess.on('error', err => {
+      console.log('Server Error: ', err)
+      mainWindow.webContents.send('server-status-update', false)
+    })
+
     serverProcess.stdout.on('data', (data) => {
-      console.log('data:', data.toString())
+      console.log('Redis - STDOUT:', data.toString())
     })
   }
 }
@@ -46,6 +53,14 @@ function stopRedisServer () {
     serverProcess.kill('SIGKILL')
     serverProcess = null
   }
+}
+
+function sendServerStatus (e) {
+  exec('/usr/local/bin/redis-cli ping', (err, stdout, stderr) => {
+    let isRunning = !err && stdout === 'PONG\n'
+    console.log('server is running?', isRunning)
+    e.sender.send('server-status-update', isRunning)
+  })
 }
 
 function setupMenuBar () {
@@ -89,6 +104,11 @@ app.on('ready', () => {
   startRedisServer()
 })
 
-app.on('quit', () => {
-  stopRedisServer()
+app.on('quit', stopRedisServer)
+
+ipc.on('is-server-running', sendServerStatus)
+ipc.on('control-server', (e, action) => {
+  if (action === 'start') startRedisServer()
+  if (action === 'stop') stopRedisServer()
+  sendServerStatus(e)
 })
