@@ -23,7 +23,7 @@
   "keywords": [
     "redis",
     "launcher",
-    "redis-server"
+    "redis-server",
     "electron-app",
     "electron"
   ],
