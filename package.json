@@ -1,8 +1,8 @@
 {
   "name": "redis-launcher",
   "productName": "RedisLauncher",
-  "version": "0.0.0",
-  "description": "My laudable app",
+  "version": "0.0.1",
+  "description": "Redis Launcher",
   "license": "MIT",
   "repository": "JonathanPrince/redis-launcher",
   "author": {
@@ -11,7 +11,7 @@
     "url": "edgeofconfusion.com"
   },
   "scripts": {
-    "test": "xo",
+    "test": "",
     "start": "electron .",
     "build": "electron-packager . --out=dist --overwrite --arch=x64 --platform=darwin --icon=assets/images/icon.icns"
   },
@@ -21,6 +21,9 @@
     "index.css"
   ],
   "keywords": [
+    "redis",
+    "launcher",
+    "redis-server"
     "electron-app",
     "electron"
   ],
@@ -30,14 +33,6 @@
   "devDependencies": {
     "devtron": "^1.1.0",
     "electron-packager": "^7.0.0",
-    "electron-prebuilt": "^1.0.1",
-    "xo": "^0.15.0"
-  },
-  "xo": {
-    "esnext": true,
-    "envs": [
-      "node",
-      "browser"
-    ]
+    "electron-prebuilt": "^1.0.1"
   }
 }
