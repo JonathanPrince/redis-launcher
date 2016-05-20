@@ -12,6 +12,7 @@ const Tray = electron.Tray
 let mainWindow
 let serverProcess
 let appIcon
+let contextMenu
 
 function onClosed () {
   mainWindow = null
@@ -59,6 +60,13 @@ function sendServerStatus (e) {
   exec('/usr/local/bin/redis-cli ping', (err, stdout, stderr) => {
     let isRunning = !err && stdout === 'PONG\n'
     console.log('server is running?', isRunning)
+    if (isRunning) {
+      contextMenu.items[2].enabled = false
+      contextMenu.items[3].enabled = true
+    } else {
+      contextMenu.items[2].enabled = true
+      contextMenu.items[3].enabled = false
+    }
     if (e) {
       e.sender.send('server-status-update', isRunning)
     } else if (mainWindow) {
@@ -69,7 +77,7 @@ function sendServerStatus (e) {
 
 function setupMenuBar () {
   appIcon = new Tray(`${__dirname}/assets/images/tray-icon.png`)
-  var contextMenu = Menu.buildFromTemplate([
+  contextMenu = Menu.buildFromTemplate([
     { label: 'Open Window',
       click: () => {
         if (!mainWindow) {
